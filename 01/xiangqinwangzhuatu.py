@@ -46,27 +46,38 @@ def getcity():
     return cityid
 #getcity()
 
-def search():
-    startage,endage=getage()
-    gender=getsex()
-    cityid=getcity()
-    startheight,endheight = 161,170
-    marry  = 1
+def get_urlandres():
+    startage, endage = getage()
+    gender = getsex()
+    cityid = getcity()
+    startheight, endheight = 161, 170
+    marry = 1
     education = 30
-
-    base_url="http://www.lovewzly.com/api/user/pc/list/search?startage={}&endage={}" \
-             "&gender={}&cityid={}&startheight={}&endheight={}&marry={}&education={}&page=1".\
-        format(startage,endage,gender,cityid,startheight,endheight,marry,education)
-    print(base_url)
-    respond=requests.get(base_url)
-    print(respond)
-    jsonss=respond.json()
-    print(jsonss)
-    for item in jsonss['data']['list']:
-        print(item['userid'])
-
+    header={'Referer':'http://www.lovewzly.com/jiaoyou.html',
+    'User-Agent':'Mozilla/5.0(Windows NT6.1;Win64;x64;rv:62.0) Gecko/20100101Firefox/62.0'}
+    for page in range(1,6):
+        base_url = "http://www.lovewzly.com/api/user/pc/list/search?startage={}&endage={}" \
+        "&gender={}&cityid={}&startheight={}&endheight={}&marry={}&education={}&page={}". \
+        format(startage, endage, gender, cityid, startheight, endheight, marry, education,page)
+        respond=requests.get(base_url,headers=header)
+        json=respond.json()
+        for item in json['data']['list']:
+            image_save(item)
 
 
 
 
-search()
+def image_save(item):
+    image_url=item['avatar']
+    res=requests.get(image_url)
+    if res.status_code==200:
+        path = 'dong/{}.jpg'.format(item['username'])
+        if not os.path.exists(path):
+            print("正在下载。。。")
+            with open(path,'wb') as f:
+                f.write(res.content)
+        else:
+            print("已下载")
+
+get_urlandres()
+
